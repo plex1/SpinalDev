@@ -3,7 +3,7 @@
 #
 # https://github.com/plex1/SpinalDev
 #
-# This Dockerfile creates a container full of useful tools for
+# This Dockerfile creates a image full of useful tools for
 # SpinalHDL development. See associated README.md for more
 # information. This Dockerfile is mostly based on the instructions
 # found at https://spinalhdl.github.io/SpinalDoc.
@@ -53,7 +53,7 @@ RUN adduser ${USER} sudo
 #  - user spinaldev for all files in /home/spinaldev
 
 
-####### IntelliJ ##########################################
+####### IntelliJ #######################################
 
 # Set the version variables
 ARG INTELLIJ_VER=2017.3
@@ -83,7 +83,7 @@ RUN mkdir -p $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins && \
 USER root
 
 
-####### Spinal HDL ########################################
+####### Spinal HDL and tools ##############################
 
 # Install java and scala
 RUN apt-get update && apt-get install -y \
@@ -98,7 +98,7 @@ RUN apt-get update
 RUN apt-get -y install sbt
 
 # Install verilator
-# Verilaor (version 3.9+ required, in general apt-get will give 3.8)
+# Verilator (version 3.9+ required, in general apt-get will give 3.8)
 RUN apt-get update && apt-get install -y \
   git \
   make \
@@ -153,7 +153,7 @@ RUN git clone https://github.com/SpinalHDL/VexRiscvSocSoftware.git $WORKDIR/proj
 RUN mkdir -p $WORKDIR/projects/user
 
 
-####### RICSV ##########################################
+####### RICSV #############################################
 
 USER root
 
@@ -191,11 +191,22 @@ RUN riscv64-unknown-elf-gcc -o hello hello.c
 
 WORKDIR /opt
 
+#openocd-riscv-vecriscv
+RUN apt-get install -y \
+  libtool automake libusb-1.0.0-dev texinfo libusb-dev libyaml-dev pkg-config
+  
+RUN git clone https://github.com/SpinalHDL/openocd_riscv.git && \
+    cd openocd_riscv && \
+    ./bootstrap && \
+    ./configure --enable-ftdi --enable-dummy  && \
+    make
+    
 #icepack dependencies
 RUN apt-get install -y \
   pkg-config \
   libftdi-dev \
   libffi-dev
+  
 #yosys dependencies  
 RUN apt-get install -y \ 
   tcl-dev \
