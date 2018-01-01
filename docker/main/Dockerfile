@@ -201,6 +201,7 @@ RUN git clone https://github.com/SpinalHDL/openocd_riscv.git && \
     ./configure --enable-ftdi --enable-dummy  && \
     make
     
+#icepack see http://www.clifford.at/icestorm/   
 #icepack dependencies
 RUN apt-get install -y \
   pkg-config \
@@ -228,11 +229,13 @@ RUN git clone https://github.com/cliffordwolf/icestorm.git icestorm && \
     make install
 
 # arachne-pnr
-# see http://www.clifford.at/icestorm/
+RUN git clone https://github.com/cseed/arachne-pnr.git arachne-pnr && \
+    cd arachne-pnr && \
+    make -j$(nproc) && \
+    make install
 
 # iceprogduino
 # see https://github.com/OLIMEX/iCE40HX1K-EVB/tree/master/programmer/iceprogduino
-
 
 ####### Startup Script ####################################
 
