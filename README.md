@@ -37,17 +37,19 @@ The best way to get started is to download the image for this
 container directly from Doc Hub and then run the container and play
 inside it. Here are the steps for Ubuntu.
 
-   1. Install docker client (e.g. [docker docks](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce))
-   2. Get the container either
-      * Get image from docker hub
+   1. Install docker client (e.g. see [docker docks](https://docs.docker.com/engine/installation/linux/docker-ce/ubuntu/#install-docker-ce))
+   2. Get the image, either
+      * get image from docker hub
         * `sudo docker pull plex1/spinaldev`
       * OR build image yourself
         * `git clone https://github.com/plex1/SpinalDev.git`
         * `cd SpinalDev/docker/main/`
         * `sudo docker build -t plex1/spinaldev` 
-   3. `xhost local:root`
-   4. `sudo docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -p 3389:3389 plex1/spinaldev:latest`
-   5. You are now logged into the develoment environment as the user spinaldev.
+   3. Add X access for root
+      * `xhost local:root`
+   4. Run the docker container
+      * `sudo docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -p 3389:3389 plex1/spinaldev:latest`
+   5. You are now logged into the develoment environment as the user spinaldev
 
 As a first step you can run the following commands. They build and test an example design.
 ```sh
@@ -89,8 +91,7 @@ The risc-v processor can be build with the following set of commands.
 #Go to a risc-v cpu
 cd /home/spinaldev/projects/spinal/VexRiscv
 
-
-#Generate the Verilog of the cpu
+#Generate the verilog of the cpu
 sbt "run-main vexriscv.demo.GenFull"
 
 #Inspect generated files
@@ -108,11 +109,11 @@ make run DEBUG_PLUGIN_EXTERNAL=yes
 
 ```
 
-The last message shows BOOT which means that the simulation is running in a process. We open a second terminal. E.g. via docker from your host.
+The last message shows BOOT which means that the simulation is running in a process. We open a second terminal. E.g. via docker from your host:
 ```
 docker exec -u spinaldev -it container_id bash
 ```
-In this terminal we run the following commands to start the OpenOCD server. The server is connected to the simulation started above.
+In this second terminal we run the following commands to start the OpenOCD server. The server is connected to the simulation started above.
 
 ```sh
 #Start the OpenOCD server
@@ -120,7 +121,7 @@ cd /opt/openocd_riscv/
 src/openocd -c "set VEXRISCV_YAML /home/spinaldev/projects/spinal/VexRiscv/cpu0.yaml" -f tcl/target/vexriscv_sim.cfg
 ```
 
-We should now have two terminals open and we will open a third one (e.g. as describe above). Here we run the following actual debugger and connect it to the OpenOCD server via tcp port 3333.
+We should now have two terminals open and we will open a third one (e.g. as describe above). Here we run the actual debugger and connect it to the OpenOCD server via tcp port 3333.
 ```sh
 #Run the debugger with prebuild uart example sw
 riscv64-unknown-elf-gdb ~/projects/spinal/VexRiscv/src/test/resources/elf/uart.elf
@@ -129,9 +130,9 @@ monitor reset halt
 load
 continue
 ```
-Now, the simulation of the cpu is running and messages shoud be printed in the first terminal.
+Now, the simulation of the cpu is running and messages shoud be printed in the first terminal. Specifically, we can see the uart output of the program.
 
-### Build the software 
+### Build the software
 
 The Software can be compiled as follows. In this example the uart program for the briey soc is built.
 ```sh
