@@ -30,6 +30,7 @@ RUN apt-get update && apt-get install -y \
   sudo \
   unzip \
   wget \
+  adwaita-icon-theme-full \ 
   emacs \
   git \
   x11-apps \
@@ -48,7 +49,12 @@ RUN useradd -m -s /bin/bash -d ${WORKDIR} ${USER}
 RUN echo "${USER}:${USERPWD}" | chpasswd
 RUN adduser ${USER} sudo
 
-# user settings:
+# Customize terminal
+RUN echo 'RESET="\[$(tput sgr0)\]"' >> $WORKDIR/.bashrc
+RUN echo 'GREEN="\[$(tput setaf 2)\]"' >> $WORKDIR/.bashrc 
+RUN echo 'export PS1="${GREEN}\u:\W${RESET} $ "' >> $WORKDIR/.bashrc 
+
+# owner settings:
 #  - user root for all files in /opt
 #  - user spinaldev for all files in /home/spinaldev
 
@@ -66,11 +72,10 @@ RUN wget https://download.jetbrains.com/idea/ideaIC-$INTELLIJ_VER.$INTELLIJ_SUBV
     tar -xf /tmp/intellij.tar.gz --strip-components=1 -C /opt/intellij && \
     rm /tmp/intellij.tar.gz
 
+# Add intellij to path
+RUN echo 'export PATH=$PATH:/opt/intellij/bin/' >> $WORKDIR/.bashrc 
+
 USER $USER
-
-# Create a link to intellij
-RUN ln -s /opt/intellij/bin/idea.sh $WORKDIR/intellij
-
 
 # Download and install intellij scala plugin
 
@@ -172,12 +177,10 @@ ARG RISCV_GCC_VER=riscv64-unknown-elf-gcc-20170612-x86_64-linux-centos6
 WORKDIR /opt
 
 # Download pre-built gcc compiler
-RUN wget https://static.dev.sifive.com/dev-tools/$RISCV_GCC_VER.tar.gz -q
-
-# save in /opt/riscv
-RUN tar -xzvf $RISCV_GCC_VER.tar.gz
-RUN mv $RISCV_GCC_VER /opt/riscv
-RUN rm $RISCV_GCC_VER.tar.gz
+RUN wget https://static.dev.sifive.com/dev-tools/$RISCV_GCC_VER.tar.gz -q && \
+    tar -xzvf $RISCV_GCC_VER.tar.gz && \
+    mv $RISCV_GCC_VER /opt/riscv && \
+    rm $RISCV_GCC_VER.tar.gz
 
 # Run a simple test to make sure compile is setup corretly
 RUN mkdir -p $RISCV/test
@@ -236,6 +239,19 @@ RUN git clone https://github.com/cseed/arachne-pnr.git arachne-pnr && \
 
 # iceprogduino
 # see https://github.com/OLIMEX/iCE40HX1K-EVB/tree/master/programmer/iceprogduino
+
+
+####### Eclipse ###########################################
+
+WORKDIR /opt
+
+RUN wget http://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/helios/SR2/eclipse-cpp-helios-SR2-linux-gtk-x86_64.tar.gz -O eclipse.tar.gz -q  && \
+    tar -xvzf eclipse.tar.gz && \
+    rm eclipse.tar.gz && \
+    cd eclipse && \
+    ./eclipse -application org.eclipse.equinox.p2.director -repository http://opensource.zylin.com/zylincdt -installIU com.zylin.cdt.feature.feature.group/ 
+ENV PATH /opt/eclipse:$PATH
+RUN echo 'export PATH=/opt/eclipse:$PATH' >> $WORKDIR/.bashrc    
 
 ####### Startup Script ####################################
 
