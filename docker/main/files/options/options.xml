@@ -1,0 +1,9 @@
+<application>
+  <component name="PropertiesComponent">
+    <property name="installed.kotlin.plugin.version" value="1.2.0-release-IJ2017.3-1" />
+    <property name="android-component-compatibility-check" value="1516646789047" />
+    <property name="project.wizard.group" value="JAVA_MODULE" />
+    <property name="project.wizard.template" value="Java" />
+    <property name="file.chooser.recent.files" value="/usr/lib/jvm/java-1.8.0-openjdk-amd64" />
+  </component>
+</application>

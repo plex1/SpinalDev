@@ -1,6 +1,6 @@
 # SpinalDev - Development Environment for SpinalHDL
 
-[SpinalHDL](https://github.com/SpinalHDL/SpinalHDL) is a hardware description language (HDL). SpinalHDL written on top of Scala and allows for high level constructs. This repository contains a **Dockerfile** for FPGA/ASIC development with SpinalHDL. The Dockerfile and contend of this README is mostly based on the instructions found at <https://spinalhdl.github.io/SpinalDoc>. The container includes a number of tools, libraries and dependencies related to SpinalHDL.
+[SpinalHDL](https://github.com/SpinalHDL/SpinalHDL) is a hardware description language (HDL). SpinalHDL written on top of Scala and allows for high level constructs. This repository contains a **Dockerfile** for FPGA/ASIC development with SpinalHDL. The Dockerfile and content of this README is mostly based on the instructions found at <https://spinalhdl.github.io/SpinalDoc>. The container includes a number of tools, libraries and dependencies related to SpinalHDL.
 
 
 ## Container Content
@@ -28,6 +28,7 @@ The following tools and libraries are installed:
 - X11/ xfce4 desktop environment
 - Remote Desktop (rdp) Server listening on port 3389
 - [Intellij IDE](https://www.jetbrains.com/idea/) with [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala)
+- Eclipse IDE
 
 
 ## Getting Started

@@ -59,37 +59,9 @@ RUN echo 'export PS1="${GREEN}\u:\W${RESET} $ "' >> $WORKDIR/.bashrc
 #  - user spinaldev for all files in /home/spinaldev
 
 
-####### IntelliJ #######################################
-
-# Set the version variables
-ARG INTELLIJ_VER=2017.3
-ARG INTELLIJ_SUBVER=1
-ARG INTELLIJ_VERID=41523
-
-# Download and install intellij
-RUN wget https://download.jetbrains.com/idea/ideaIC-$INTELLIJ_VER.$INTELLIJ_SUBVER.tar.gz -O /tmp/intellij.tar.gz -q && \
-    mkdir -p /opt/intellij && \
-    tar -xf /tmp/intellij.tar.gz --strip-components=1 -C /opt/intellij && \
-    rm /tmp/intellij.tar.gz
-
-# Add intellij to path
-RUN echo 'export PATH=$PATH:/opt/intellij/bin/' >> $WORKDIR/.bashrc 
-
-USER $USER
-
-# Download and install intellij scala plugin
-
-RUN mkdir -p $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins && \
-    wget https://plugins.jetbrains.com/plugin/download?updateId=$INTELLIJ_VERID -O $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins/scalaplugin.zip -q && \    
-    cd $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins/ && \
-    unzip -q scalaplugin.zip && \
-    rm scalaplugin.zip
-    
-USER root
-
-
 ####### Spinal HDL and tools ##############################
 
+USER root
 # Install java and scala
 RUN apt-get update && apt-get install -y \
   openjdk-8-jdk \
@@ -101,6 +73,22 @@ RUN echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/source
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 2EE0EA64E40A89B84B2DF73499E82A75642AC823
 RUN apt-get update
 RUN apt-get -y install sbt
+
+USER $USER
+
+# Install spinal core & lib
+RUN mkdir -p $WORKDIR/tools/spinal
+RUN git clone https://github.com/SpinalHDL/SpinalHDL.git $WORKDIR/tools/spinal/SpinalHDL
+WORKDIR $WORKDIR/tools/spinal/SpinalHDL
+RUN sbt clean compile publish-local
+
+RUN mkdir -p $WORKDIR/projects/spinal
+RUN cd $WORKDIR/projects/spinal
+RUN git clone https://github.com/SpinalHDL/VexRiscv.git $WORKDIR/projects/spinal/VexRiscv
+RUN git clone https://github.com/SpinalHDL/SpinalTemplateSbt.git $WORKDIR/projects/spinal/SpinalTemplateSbt
+RUN git clone https://github.com/SpinalHDL/VexRiscvSocSoftware.git $WORKDIR/projects/spinal/VexRiscvSocSoftware
+
+USER root
 
 # Install verilator
 # Verilator (version 3.9+ required, in general apt-get will give 3.8)
@@ -127,7 +115,7 @@ RUN echo "${USER} ALL =(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 USER $USER
 RUN sudo make install
 
-# COCOTB
+# Install COCOTB
 RUN sudo apt-get update && sudo apt-get install -y \
   gcc \
   g++ \
@@ -140,20 +128,8 @@ RUN git clone https://github.com/potentialventures/cocotb
 RUN export COCOTB=$WORKDIR/tools/cocotb
 RUN echo 'export COCOTB=$WORKDIR/tools/cocotb' >> ~/.bashrc 
 
-# GTKWave
+# Install GTKWave
 RUN sudo apt-get install -y gtkwave
-
-# Install spinal core & lib
-RUN mkdir -p $WORKDIR/tools/spinal
-RUN git clone https://github.com/SpinalHDL/SpinalHDL.git $WORKDIR/tools/spinal/SpinalHDL
-WORKDIR $WORKDIR/tools/spinal/SpinalHDL
-RUN sbt clean compile publish-local
-
-RUN mkdir -p $WORKDIR/projects/spinal
-RUN cd $WORKDIR/projects/spinal
-RUN git clone https://github.com/SpinalHDL/VexRiscv.git $WORKDIR/projects/spinal/VexRiscv
-RUN git clone https://github.com/SpinalHDL/SpinalTemplateSbt.git $WORKDIR/projects/spinal/SpinalTemplateSbt
-RUN git clone https://github.com/SpinalHDL/VexRiscvSocSoftware.git $WORKDIR/projects/spinal/VexRiscvSocSoftware
 
 RUN mkdir -p $WORKDIR/projects/user
 
@@ -241,22 +217,86 @@ RUN git clone https://github.com/cseed/arachne-pnr.git arachne-pnr && \
 # see https://github.com/OLIMEX/iCE40HX1K-EVB/tree/master/programmer/iceprogduino
 
 
+####### IntelliJ #######################################
+
+USER root
+
+# Set the version variables
+ARG INTELLIJ_VER=2017.3
+ARG INTELLIJ_SUBVER=1
+ARG INTELLIJ_VERID=41523
+
+# Download and install intellij
+RUN wget https://download.jetbrains.com/idea/ideaIC-$INTELLIJ_VER.$INTELLIJ_SUBVER.tar.gz -O /tmp/intellij.tar.gz -q && \
+    mkdir -p /opt/intellij && \
+    tar -xf /tmp/intellij.tar.gz --strip-components=1 -C /opt/intellij && \
+    rm /tmp/intellij.tar.gz
+RUN cd /opt/intellij/bin && \
+    ln -s idea.sh intellij
+
+# Add intellij to path
+RUN echo 'export PATH=$PATH:/opt/intellij/bin/' >> $WORKDIR/.bashrc 
+
+USER $USER
+
+# Download and install intellij scala plugin
+
+RUN mkdir -p $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins && \
+    wget https://plugins.jetbrains.com/plugin/download?updateId=$INTELLIJ_VERID -O $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins/scalaplugin.zip -q && \    
+    cd $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins/ && \
+    unzip -q scalaplugin.zip && \
+    rm scalaplugin.zip
+    
+
 ####### Eclipse ###########################################
 
+USER root
 WORKDIR /opt
 
 RUN wget http://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/helios/SR2/eclipse-cpp-helios-SR2-linux-gtk-x86_64.tar.gz -O eclipse.tar.gz -q  && \
     tar -xvzf eclipse.tar.gz && \
-    rm eclipse.tar.gz && \
-    cd eclipse && \
-    ./eclipse -application org.eclipse.equinox.p2.director -repository http://opensource.zylin.com/zylincdt -installIU com.zylin.cdt.feature.feature.group/ 
+    rm eclipse.tar.gz
+    
 ENV PATH /opt/eclipse:$PATH
-RUN echo 'export PATH=/opt/eclipse:$PATH' >> $WORKDIR/.bashrc    
+RUN echo 'export PATH=/opt/eclipse:$PATH' >> $WORKDIR/.bashrc
+
+# install Zylin Embedded Debugging Plugin
+USER $USER
+WORKDIR $WORKDIR
+RUN eclipse -noSplash -application org.eclipse.equinox.p2.director -repository http://opensource.zylin.com/zylincdt -installIU com.zylin.cdt.feature.feature.group/ 
+
+
+####### Eclipse and Intellij config  ######################
+USER $USER
+
+# copy options where the default Intellij SDK is set to Java 1.8
+# manually this can be done by doing
+# in welcome screen, configure -> Project defaults -> Project structure
+# -> add JDK -> select propesed file JDK 1.8
+RUN mkdir -p  $WORKDIR/.IdeaIC$INTELLIJ_VER/config/
+COPY ./files/options/ $WORKDIR/.IdeaIC$INTELLIJ_VER/config/options/
+USER root
+RUN chown -R $USER $WORKDIR/.IdeaIC$INTELLIJ_VER/config/options/
+USER $USER
+
+# save an eclipse debug configuration, see https://github.com/spinalhdl/vexriscv
+RUN mkdir -p  $WORKDIR/workspace/.metadata/.plugins/org.eclipse.debug.core/.launches/
+COPY ./files/Murax.launch $WORKDIR/workspace/.metadata/.plugins/org.eclipse.debug.core/.launches/
+USER root
+RUN chown -R $USER $WORKDIR/workspace/
+USER $USER
+
+########## (move this section up
+USER $USER
+
+RUN git clone https://github.com/plex1/SpinalDevTemplateStandalone.git $WORKDIR/projects/user/SpinalDevTemplateStandalone
+
+RUN git clone https://github.com/plex1/SpinalDevTemplateSoc.git $WORKDIR/projects/user/SpinalDevTemplateSoc
 
 ####### Startup Script ####################################
 
-WORKDIR /
 USER root
+WORKDIR /
 # run the startup script each time the container is created
 COPY ./startup.sh /opt
 RUN chmod +x /opt/startup.sh
