@@ -223,7 +223,7 @@ USER root
 
 # Set the version variables
 ARG INTELLIJ_VER=2017.3
-ARG INTELLIJ_SUBVER=1
+ARG INTELLIJ_SUBVER=5
 ARG INTELLIJ_VERID=41523
 
 # Download and install intellij
