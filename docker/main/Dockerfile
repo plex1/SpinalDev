@@ -286,12 +286,17 @@ USER root
 RUN chown -R $USER $WORKDIR/workspace/
 USER $USER
 
-########## (move this section up
+########## add project templates and project tool (project.bash) ######
 USER $USER
 
 RUN git clone https://github.com/plex1/SpinalDevTemplateStandalone.git $WORKDIR/projects/user/SpinalDevTemplateStandalone
 
 RUN git clone https://github.com/plex1/SpinalDevTemplateSoc.git $WORKDIR/projects/user/SpinalDevTemplateSoc
+
+USER root
+COPY ./files/project.bash $WORKDIR/projects/user/
+RUN chown -R $USER $WORKDIR/projects/user/project.bash
+RUN chmod +x $WORKDIR/projects/user/project.bash
 
 ####### Startup Script ####################################
 
