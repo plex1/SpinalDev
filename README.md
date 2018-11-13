@@ -158,7 +158,7 @@ ls bin/
 ```
 
 
-### Docker Volumes
+## Docker Volumes
 
 When working with projects in SpinalDev it is recommended to use docker volumes. The data in containers is not persistent. Therfore the data needs to be stored on the host and mounted in the container (volumes). Docker has build in methods to deal with volumes. It is recommeded to mount the complete home directory (/home/spinaldev). This is because in home some application data is stored. E.g the for the intellij editor this data is under ~/.idea. Without keeping this data upd to date, the idea application and  projects become unsynchronized and projects cannot be opened anymore. The following procedure to generate the docker volumes is recommended. The first time when the docker run command is executed the content of the docker home directory is copied onto the host (in this example under /home/username/spinalvol).
 
@@ -173,7 +173,7 @@ sudo docker run -it --rm -e DISPLAY=$DISPLAY -v /tmp/.X11-unix:/tmp/.X11-unix -v
 See also on the [docker website](https://docs.docker.com/engine/admin/volumes/volumes/).
 
 
-### Create your own projects
+## Create your own projects
 
 To create your own projects run the `project.bash` script and follow the instructions.
 
