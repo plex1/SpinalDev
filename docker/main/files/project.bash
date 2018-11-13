@@ -83,7 +83,7 @@ then
 	*) echo "Aborted"; exit ;;
     esac
     read -p "Create project [c] or run project [r]: " cr
-    case $continue in
+    case $cr in
 	[c]*)
 	    mainaction="create"
 	    read -p "Project name: " name
@@ -91,10 +91,15 @@ then
 	    ;;
 	[r]*)
 	    mainaction="run"
-	    # list directories or get current directory (has hdl, has sw folder, has src folder, build.sbt put in function)
+	    # todo: list directories or get current directory (has hdl, has sw folder, has src folder, build.sbt put in function)
 	    read -p "Project name  : " name
-	    # automatically get type
-	    read -p "Project type  : " type
+	    # automatically detect type
+	    if [ -d "$directory/$name/hdl" ]
+	    then
+		type="standalone" 
+	    else
+		type="soc" 
+	    fi
 	    read -p "Project action: " action
 	    ;;
 	*) echo "Aborted"; exit ;;
@@ -113,7 +118,7 @@ then
 	    echo "creating standalone project named $name ..."	
 	    command="cd $directory; git clone https://github.com/plex1/SpinalDevTemplateStandalone.git $name"
 	    ;;
-	("muraxsoc")
+	("soc")
 	    echo "creating SoC project named $name ..."
 	    command="cd $directory; git clone https://github.com/plex1/SpinalDevTemplateSoc.git $name"
 	    ;;
@@ -135,36 +140,37 @@ then
     
      if [ "$type" == "standalone" ]
      then
-	$dirpart="" 
+	dirpart="hdl" 
      else
-	$dirpart="fw/hdl/" 
+	dirpart="fw/hdl/" 
      fi
-    case "$type" in
+    case "$action" in
 	
-	("sw")
+	("swbuild")
 	    echo "building sw for project named $name ..."
 	    if [ "$type" == "muraxsoc" ]
 	    then
-		command="cd $directory/sw; make"
+		command="cd $directory/$name/sw; make"
 	    else
 		echo "not possible to build sw for this project type"
 		exit 1
 	    fi
 	    ;;
-	("fw")
-	    echo "compile the spinal HDL firmware for project named $name ..." 
-	    sbt "cd $directory/$dirpart; sbt run"
+	("fwbuild")
+	    echo "compile the spinal HDL firmware for project named $name ..."	    
+	    command="cd $directory/$name/$dirpart; sbt run"
 	    ;;
 	("fwtest")
 	    echo "run the spinal HDL test bench for project named $name ..." 
-	    sbt "cd $directory/$dirpart;sbt test:run"
+	    command="cd $directory/$name/$dirpart;sbt test:run"
 	    ;;
 	("impl")
 	    echo "implement design for project named $name ..." 
-	    sbt "cd $directory/$dirpart; make compile"    
+	    command="cd $directory/$name/$dirpart/impl/iCE40HX8K-EVB; make compile"
+	    ;;
 	    
 	*)
-	    echo "project type"  "$type" "not found! Aborted ..."
+	    echo "action "  "$action" "not found! Aborted ..."
 	    exit
 	    ;;
 	
@@ -183,7 +189,7 @@ case $confirm in
 esac
 
 # describe result
-if [ $ret_code == 0 ]
+if [ $ret_code == 0 ] && [ "$mainaction" == "create" ]
 then
     echo "You'll now find your project template in the folder: " "$directory/$name"
 fi
