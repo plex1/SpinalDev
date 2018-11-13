@@ -44,7 +44,7 @@ inside it. Here are the steps for Ubuntu.
       * OR build image yourself
         * `git clone https://github.com/plex1/SpinalDev.git`
         * `cd SpinalDev/docker/main/`
-        * `sudo docker build -t plex1/spinaldev` 
+        * `sudo docker build -t plex1/spinaldev .` 
    3. Add X access for root
       * `xhost local:root`
    4. Run the docker container
