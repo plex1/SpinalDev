@@ -1,9 +1,0 @@
-<application>
-  <component name="DimensionService">
-    <location key="new project wizard.0.0.1920.1080" x="212" y="138" />
-    <location key="FileChooserDialogImpl.0.0.1920.1080" x="1090" y="204" />
-    <location key="SettingsEditor.0.0.1920.1080" x="798" y="24" />
-    <size key="new project wizard.0.0.1920.1080" width="910" height="790" />
-    <size key="SettingsEditor.0.0.1920.1080" width="1026" height="856" />
-  </component>
-</application>

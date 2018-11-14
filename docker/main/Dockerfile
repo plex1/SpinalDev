@@ -222,9 +222,10 @@ RUN git clone https://github.com/cseed/arachne-pnr.git arachne-pnr && \
 USER root
 
 # Set the version variables
-ARG INTELLIJ_VER=2017.3
-ARG INTELLIJ_SUBVER=5
-ARG INTELLIJ_VERID=41523
+ARG INTELLIJ_VER=2018.2
+ARG INTELLIJ_SUBVER=6
+# version id can be found on jetbrains webpage when downloading of scala plugin
+ARG INTELLIJ_VERID=47787
 
 # Download and install intellij
 RUN wget https://download.jetbrains.com/idea/ideaIC-$INTELLIJ_VER.$INTELLIJ_SUBVER.tar.gz -O /tmp/intellij.tar.gz -q && \
@@ -244,7 +245,7 @@ USER $USER
 RUN mkdir -p $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins && \
     wget https://plugins.jetbrains.com/plugin/download?updateId=$INTELLIJ_VERID -O $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins/scalaplugin.zip -q && \    
     cd $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins/ && \
-    unzip -q scalaplugin.zip && \
+    unzip -o -q scalaplugin.zip && \
     rm scalaplugin.zip
     
 
@@ -266,17 +267,7 @@ WORKDIR $WORKDIR
 RUN eclipse -noSplash -application org.eclipse.equinox.p2.director -repository http://opensource.zylin.com/zylincdt -installIU com.zylin.cdt.feature.feature.group/ 
 
 
-####### Eclipse and Intellij config  ######################
-USER $USER
-
-# copy options where the default Intellij SDK is set to Java 1.8
-# manually this can be done by doing
-# in welcome screen, configure -> Project defaults -> Project structure
-# -> add JDK -> select propesed file JDK 1.8
-RUN mkdir -p  $WORKDIR/.IdeaIC$INTELLIJ_VER/config/
-COPY ./files/options/ $WORKDIR/.IdeaIC$INTELLIJ_VER/config/options/
-USER root
-RUN chown -R $USER $WORKDIR/.IdeaIC$INTELLIJ_VER/config/options/
+####### Eclipse config  ######################
 USER $USER
 
 # save an eclipse debug configuration, see https://github.com/spinalhdl/vexriscv

@@ -15,9 +15,19 @@ where:
     -h  show this help text
     -n  project name    : name of the project
     -t  type of project : standalone, soc, workshop                 
-    -a  project action  : fwbuild, fwtest, impl, swbuild, intellijhdl, eclipsesw, openocdsim, fwtest_initram
-                 (needs to be specified for $(basename "$0") run)
-    -y  user does not need to confirm action"
+    -a  project action  : fwbuild, fwtest, impl, swbuild, intellij, eclipse, openocd
+    (action needs to be specified for $(basename "$0") run)
+    -y  user does not need to confirm action
+
+Example 1: 
+  ./$(basename "$0") # press 'y' to enter interactive mode
+
+Example 2: 
+  ./$(basename "$0") create -n myproject -t soc            # create project
+  ./$(basename "$0") run -n myproject -t soc -a fwbuild    # build hdl and generate verilog
+  ./$(basename "$0") run -n myproject -t soc -a swbuild    # build sw and and genrate binary
+  ./$(basename "$0") run -n myproject -t soc -a fwtest     # run testbench (needs sw binary)
+"
 
 directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -32,7 +42,7 @@ mainaction="$1"
 if [  "$#" != "0" ] && [ "$mainaction" != "-h" ]
 then
   shift 1 
-  if [ "$mainaction" != "create" ]
+  if [ "$mainaction" != "create" ] && [ "$mainaction" != "run" ]
   then
       echo "main action" "$mainaction" "not yet supported"
       exit 1
@@ -90,8 +100,7 @@ then
 	    read -p "Project type: " type
 	    ;;
 	[r]*)
-	    mainaction="run"
-	    # todo: list directories or get current directory (has hdl, has sw folder, has src folder, build.sbt put in function)
+	    mainaction="run"	  
 	    read -p "Project name  : " name
 	    # automatically detect type
 	    if [ -d "$directory/$name/hdl" ]
@@ -140,15 +149,15 @@ then
     
      if [ "$type" == "standalone" ]
      then
-	dirpart="hdl" 
+	dirpart="" 
      else
-	dirpart="fw/hdl/" 
+	dirpart="fw/" 
      fi
     case "$action" in
 	
 	("swbuild")
 	    echo "building sw for project named $name ..."
-	    if [ "$type" == "muraxsoc" ]
+	    if [ "$type" == "soc" ]
 	    then
 		command="cd $directory/$name/sw; make"
 	    else
@@ -158,15 +167,33 @@ then
 	    ;;
 	("fwbuild")
 	    echo "compile the spinal HDL firmware for project named $name ..."	    
-	    command="cd $directory/$name/$dirpart; sbt run"
+	    command="cd $directory/$name/${dirpart}hdl; sbt run"
 	    ;;
 	("fwtest")
 	    echo "run the spinal HDL test bench for project named $name ..." 
-	    command="cd $directory/$name/$dirpart;sbt test:run"
+	    command="cd $directory/$name/${dirpart}hdl;sbt test:run"
 	    ;;
 	("impl")
 	    echo "implement design for project named $name ..." 
-	    command="cd $directory/$name/$dirpart/impl/iCE40HX8K-EVB; make compile"
+	    command="cd $directory/$name/${dirpart}impl/iCE40HX8K-EVB; make compile"
+	    ;;
+	("intellij")
+	    echo "start intellij ..."
+	    echo "[INFO] First time run: press all ok and wait for syncing to be done"
+	    command="intellij $directory/$name/${dirpart}hdl &"
+	    ;;
+	("openocd")
+	    echo "Run OpenOCD ..."
+	    echo "[INFO] fwtest needs to be running before this action is executed. When OpenOCD is running you are able to connect with Eclipse." 
+	    command="cd /opt/openocd_riscv/; src/openocd -f tcl/interface/jtag_tcp.cfg -c \"set MURAX_CPU0_YAML /home/spinaldev/projects/user/${name}/fw/hdl/cpu0.yaml\" -f tcl/target/murax.cfg "
+	    ;;
+	
+	("eclipse")
+	    echo "start eclipse ..."
+	    echo "[INFO] First time run:"
+	    echo "  1) Select File->New->Makefile Project with Existing Source"
+	    echo "  2) choose the folder '${name}/sw'" 
+	    command="eclipse &"
 	    ;;
 	    
 	*)
@@ -193,3 +220,5 @@ if [ $ret_code == 0 ] && [ "$mainaction" == "create" ]
 then
     echo "You'll now find your project template in the folder: " "$directory/$name"
 fi
+
+echo "Script done"
