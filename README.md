@@ -178,6 +178,6 @@ See also on the [docker website](https://docs.docker.com/engine/admin/volumes/vo
 To create your own projects run the `project.bash` script and follow the instructions.
 
 ```sh
-/home/spinaldev/projects/user
-./project.bash
+cd /home/spinaldev/projects/user
+./project.bash -h
 ```

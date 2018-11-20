@@ -1,32 +1,33 @@
 #!/bin/bash
 
-# script for SpinalDev project creation, and other 
+# script to support management of SpinalHDL user projects
+# e.g. to create and compile projects
 
 usage="$(basename "$0") (create | run) -n name [-t type] [-a action] [-h] [-y] 
 
--- script to support SpinalHDL user projects
+-- script to support management of SpinalHDL user projects
 
 where:
 
-    create:  create projects
-    run:     run projects (compile fw hdl, run fw testbench, compile sw, synthesise fw impl)
-    no args: interactive mode
+  create:  create projects
+  run:     run projects (use action below)
+  no args: interactive mode
 
-    -h  show this help text
-    -n  project name    : name of the project
-    -t  type of project : standalone, soc, workshop                 
-    -a  project action  : fwbuild, fwtest, impl, swbuild, intellij, eclipse, openocd
-    (action needs to be specified for $(basename "$0") run)
-    -y  user does not need to confirm action
+  -h  show this help text
+  -n  project name    : name of the project
+  -t  type of project : standalone, soc, workshop                 
+  -a  project action  : fwbuild, fwtest, impl, swbuild, intellij, eclipse, openocd
+  -y  user does not need to confirm action
+  (action needs to be specified for $(basename "$0") run)
 
 Example 1: 
   ./$(basename "$0") # press 'y' to enter interactive mode
 
 Example 2: 
-  ./$(basename "$0") create -n myproject -t soc            # create project
-  ./$(basename "$0") run -n myproject -t soc -a fwbuild    # build hdl and generate verilog
-  ./$(basename "$0") run -n myproject -t soc -a swbuild    # build sw and and genrate binary
-  ./$(basename "$0") run -n myproject -t soc -a fwtest     # run testbench (needs sw binary)
+  ./$(basename "$0") create -n myproject -t soc          # create project
+  ./$(basename "$0") run -n myproject -t soc -a fwbuild  # build hdl and generate verilog
+  ./$(basename "$0") run -n myproject -t soc -a swbuild  # build sw and and genrate binary
+  ./$(basename "$0") run -n myproject -t soc -a fwtest   # run testbench (needs sw binary)
 "
 
 directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -35,10 +36,9 @@ type=""
 name=""
 confirm=""
 
-# extract first argument
+# extract first argument (main action)
 mainaction="$1"
 
-#echo "main action " "$mainaction" $#
 if [  "$#" != "0" ] && [ "$mainaction" != "-h" ]
 then
   shift 1 
@@ -118,7 +118,7 @@ fi
    
 echo "type: $type, name: $name"
 
-# get action command
+# main action create
 if [ "$mainaction" == "create" ]
 then
 
@@ -144,6 +144,7 @@ then
 	
     esac
     
+# main action run    
 elif [ "$mainaction" == "run" ]
 then
     
@@ -191,8 +192,13 @@ then
 	("eclipse")
 	    echo "start eclipse ..."
 	    echo "[INFO] First time run:"
-	    echo "  1) Select File->New->Makefile Project with Existing Source"
-	    echo "  2) choose the folder '${name}/sw'" 
+	    echo "  1) leave workspace unchanged"
+	    echo "  2) select File->New->Makefile Project with Existing Source"
+	    echo "     and choose the folder '${name}/sw'"
+	    echo "  3) build all"
+	    echo "  4) adapt path of *.elf file in settings in Run->Debug Configurations"
+	    echo "  5) Run->Debug"
+	    
 	    command="eclipse &"
 	    ;;
 	    
@@ -204,7 +210,7 @@ then
     esac    
 fi
 
-# action
+# perfomm main action
 echo "Action: " "\"$command\""
 if [ "$confirm" != "y" ]
 then
