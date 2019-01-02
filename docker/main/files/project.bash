@@ -16,7 +16,7 @@ where:
   -h  show this help text
   -n  project name    : name of the project
   -t  type of project : standalone, soc, workshop                 
-  -a  project action  : fwbuild, fwtest, impl, swbuild, intellij, eclipse, openocd
+  -a  project action  : fwcompile, fwtest, impl, swbuild, intellij, eclipse, openocd, scp_prog
   -y  user does not need to confirm action
   (action needs to be specified for $(basename "$0") run)
 
@@ -24,10 +24,10 @@ Example 1:
   ./$(basename "$0") # press 'y' to enter interactive mode
 
 Example 2: 
-  ./$(basename "$0") create -n myproject -t soc          # create project
-  ./$(basename "$0") run -n myproject -t soc -a fwbuild  # build hdl and generate verilog
-  ./$(basename "$0") run -n myproject -t soc -a swbuild  # build sw and and genrate binary
-  ./$(basename "$0") run -n myproject -t soc -a fwtest   # run testbench (needs sw binary)
+  ./$(basename "$0") create -n myproj -t soc            # create project
+  ./$(basename "$0") run -n myproj -t soc -a fwcompile  # compile hdl and generate verilog
+  ./$(basename "$0") run -n myproj -t soc -a swbuild    # build sw and and genrate binary
+  ./$(basename "$0") run -n myproj -t soc -a fwtest     # run testbench (needs sw binary)
 "
 
 directory="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -148,12 +148,13 @@ then
 elif [ "$mainaction" == "run" ]
 then
     
-     if [ "$type" == "standalone" ]
-     then
+    if [ "$type" == "standalone" ]
+    then
 	dirpart="" 
-     else
+    else
 	dirpart="fw/" 
-     fi
+    fi
+    
     case "$action" in
 	
 	("swbuild")
@@ -166,7 +167,7 @@ then
 		exit 1
 	    fi
 	    ;;
-	("fwbuild")
+	("fwcompile")
 	    echo "compile the spinal HDL firmware for project named $name ..."	    
 	    command="cd $directory/$name/${dirpart}hdl; sbt run"
 	    ;;
@@ -176,7 +177,7 @@ then
 	    ;;
 	("impl")
 	    echo "implement design for project named $name ..." 
-	    command="cd $directory/$name/${dirpart}impl/iCE40HX8K-EVB; make compile"
+	    command="cd $directory/$name/${dirpart}impl/$SPINALDEV_IMPL_NAME; make compile"
 	    ;;
 	("intellij")
 	    echo "start intellij ..."
@@ -200,6 +201,12 @@ then
 	    echo "  5) Run->Debug"
 	    
 	    command="eclipse &"
+	    ;;
+	
+	"scp_prog")
+	    source "$directory/$name/spinaldev.conf"
+	    echo "copy programming file ..." 
+	    command="scp $directory/$name/${dirpart}impl/$SPINALDEV_IMPL_NAME/$SPINALDEV_IMPL_PROGFILE $SPINALDEV_REMOTE_UNAME@$SPINALDEV_REMOTE_HOST:$SPINALDEV_REMOTE_PATH"
 	    ;;
 	    
 	*)
