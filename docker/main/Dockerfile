@@ -196,7 +196,7 @@ RUN apt-get install -y \
   mercurial 
   
 # yosys  
-RUN git clone https://github.com/cliffordwolf/yosys.git yosys && \
+RUN git clone https://github.com/YosysHQ/yosys.git yosys && \
     cd yosys && \
     make -j$(nproc) && \
     make install
@@ -208,7 +208,7 @@ RUN git clone https://github.com/cliffordwolf/icestorm.git icestorm && \
     make install
 
 # arachne-pnr
-RUN git clone https://github.com/cseed/arachne-pnr.git arachne-pnr && \
+RUN git clone https://github.com/YosysHQ/arachne-pnr.git arachne-pnr && \
     cd arachne-pnr && \
     make -j$(nproc) && \
     make install
@@ -216,6 +216,29 @@ RUN git clone https://github.com/cseed/arachne-pnr.git arachne-pnr && \
 # iceprogduino
 # see https://github.com/OLIMEX/iCE40HX1K-EVB/tree/master/programmer/iceprogduino
 
+#RUN sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+RUN apt-get update
+
+# next-pnr dependencies
+RUN apt-get install -y \
+  cmake \
+  python3-dev\
+  qt5-default \
+  libboost-dev \
+  libboost-filesystem-dev \
+  libboost-thread-dev \
+  libboost-program-options-dev \
+  libboost-python-dev \
+  libboost-iostreams-dev\
+  libboost-dev \
+  libeigen3-dev
+
+# next-pnr
+RUN git clone https://github.com/YosysHQ/nextpnr nextpnr && \
+    cd nextpnr && \
+    cmake -DARCH=ice40  && \
+    make -j$(nproc)  && \
+    make install
 
 ####### IntelliJ #######################################
 
@@ -247,42 +270,26 @@ RUN mkdir -p $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins && \
     cd $WORKDIR/.IdeaIC$INTELLIJ_VER/config/plugins/ && \
     unzip -o -q scalaplugin.zip && \
     rm scalaplugin.zip
-    
 
 ####### Eclipse ###########################################
 
 USER root
 WORKDIR /opt
 
-RUN wget http://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/helios/SR2/eclipse-cpp-helios-SR2-linux-gtk-x86_64.tar.gz -O eclipse.tar.gz -q  && \
+RUN wget https://github.com/gnu-mcu-eclipse/org.eclipse.epp.packages/releases/download/v4.5.1-20190101-2018-12/20190101-2023-gnumcueclipse-4.5.1-2018-12-R-linux.gtk.x86_64.tar.gz -O eclipse.tar.gz -q  && \
     tar -xvzf eclipse.tar.gz && \
     rm eclipse.tar.gz
-    
+
 ENV PATH /opt/eclipse:$PATH
 RUN echo 'export PATH=/opt/eclipse:$PATH' >> $WORKDIR/.bashrc
 
-# install Zylin Embedded Debugging Plugin
-USER $USER
-WORKDIR $WORKDIR
-RUN eclipse -noSplash -application org.eclipse.equinox.p2.director -repository http://opensource.zylin.com/zylincdt -installIU com.zylin.cdt.feature.feature.group/ 
-
-
-####### Eclipse config  ######################
-USER $USER
-
-# save an eclipse debug configuration, see https://github.com/spinalhdl/vexriscv
-RUN mkdir -p  $WORKDIR/workspace/.metadata/.plugins/org.eclipse.debug.core/.launches/
-COPY ./files/Murax.launch $WORKDIR/workspace/.metadata/.plugins/org.eclipse.debug.core/.launches/
-USER root
-RUN chown -R $USER $WORKDIR/workspace/
-USER $USER
 
 ########## add project templates and project tool (project.bash) ######
 USER $USER
 
-RUN git clone https://github.com/plex1/SpinalDevTemplateStandalone.git $WORKDIR/projects/user/SpinalDevTemplateStandalone
+#RUN git clone https://github.com/plex1/SpinalDevTemplateStandalone.git $WORKDIR/projects/user/SpinalDevTemplateStandalone
 
-RUN git clone https://github.com/plex1/SpinalDevTemplateSoc.git $WORKDIR/projects/user/SpinalDevTemplateSoc
+#RUN git clone https://github.com/plex1/SpinalDevTemplateSoc.git $WORKDIR/projects/user/SpinalDevTemplateSoc
 
 USER root
 COPY ./files/project.bash $WORKDIR/projects/user/
