@@ -57,14 +57,14 @@ As a first step you can run the following commands. They build and test an examp
 cd projects/spinal/SpinalTemplateSbt
 
 # Generate the Verilog of the design
-sbt "run-main mylib.MyTopLevelVerilog"
+sbt "runMain mylib.MyTopLevelVerilog"
 
 # Inspect generated files
 ls
 cat MyTopLevel.v
 
 # Run the scala testbench
-sbt "run-main mylib.MyTopLevelSim"
+sbt "runMain mylib.MyTopLevelSim"
 
 # Inspect the waveform of the simulation
 gtkwave simWorkspace/MyTopLevel/test.vcd&
