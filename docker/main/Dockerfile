@@ -80,7 +80,7 @@ USER $USER
 RUN mkdir -p $WORKDIR/tools/spinal
 RUN git clone https://github.com/SpinalHDL/SpinalHDL.git $WORKDIR/tools/spinal/SpinalHDL
 WORKDIR $WORKDIR/tools/spinal/SpinalHDL
-RUN sbt clean compile publish-local
+RUN sbt clean compile publishLocal
 
 RUN mkdir -p $WORKDIR/projects/spinal
 RUN cd $WORKDIR/projects/spinal
@@ -245,8 +245,8 @@ RUN git clone https://github.com/YosysHQ/nextpnr nextpnr && \
 USER root
 
 # Set the version variables
-ARG INTELLIJ_VER=2018.2
-ARG INTELLIJ_SUBVER=6
+ARG INTELLIJ_VER=2020.1
+ARG INTELLIJ_SUBVER=1
 # version id can be found on jetbrains webpage when downloading of scala plugin
 ARG INTELLIJ_VERID=47787
 

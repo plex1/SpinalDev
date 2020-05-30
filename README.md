@@ -92,7 +92,7 @@ The VexRiscv risc-v processor can be build with the following set of commands.
 cd /home/spinaldev/projects/spinal/VexRiscv
 
 # Generate the verilog of the cpu
-sbt "run-main vexriscv.demo.GenFull"
+sbt "runMain vexriscv.demo.GenFull"
 
 # Inspect generated files
 ls
