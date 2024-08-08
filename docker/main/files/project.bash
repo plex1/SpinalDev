@@ -16,7 +16,7 @@ where:
   -h  show this help text
   -n  project name    : name of the project
   -t  type of project : standalone, soc, workshop                 
-  -a  project action  : fwcompile, fwtest, impl, swbuild, intellij, eclipse, openocd, scp_prog
+  -a  project action  : fwcompile, fwtest, impl, swbuild, intellij, eclipse, openocd, configfile_copy, configfile_prog, gtkwave
   -y  user does not need to confirm action
   (action needs to be specified for $(basename "$0") run)
 
@@ -48,6 +48,7 @@ then
       exit 1
   fi
 fi
+
 
 # extract next arguments
 while getopts ':h:t:n:y:a:' option; do
@@ -117,6 +118,7 @@ then
 fi
    
 echo "type: $type, name: $name"
+source "$directory/$name/spinaldev.conf"
 
 # main action create
 if [ "$mainaction" == "create" ]
@@ -184,6 +186,13 @@ then
 	    echo "[INFO] First time run: press all ok and wait for syncing to be done"
 	    command="intellij $directory/$name/${dirpart}hdl &"
 	    ;;
+
+	("gtkwave")
+	    echo "start gtkwave ..."
+	    
+	    command="gtkwave $directory/$name/${dirpart}hdl/simWorkspace/MuraxCustom/test.vcd &"
+	    ;;
+	
 	("openocd")
 	    echo "Run OpenOCD ..."
 	    echo "[INFO] fwtest needs to be running before this action is executed. When OpenOCD is running you are able to connect with Eclipse." 
@@ -192,23 +201,19 @@ then
 	
 	("eclipse")
 	    echo "start eclipse ..."
-	    echo "[INFO] First time run:"
-	    echo "  1) leave workspace unchanged"
-	    echo "  2) select File->New->Makefile Project with Existing Source"
-	    echo "     and choose the folder '${name}/sw'"
-	    echo "  3) build all"
-	    echo "  4) adapt path of *.elf file in settings in Run->Debug Configurations"
-	    echo "  5) Run->Debug"
+	    echo "see https://github.com/SpinalHDL/VexRiscv#by-using-gnu-mcu-eclipse"
 	    
 	    command="eclipse &"
 	    ;;
 	
-	"scp_prog")
-	    source "$directory/$name/spinaldev.conf"
+	"configfile_copy")	    
 	    echo "copy programming file ..." 
 	    command="scp $directory/$name/${dirpart}impl/$SPINALDEV_IMPL_NAME/$SPINALDEV_IMPL_PROGFILE $SPINALDEV_REMOTE_UNAME@$SPINALDEV_REMOTE_HOST:$SPINALDEV_REMOTE_PATH"
 	    ;;
-	    
+	"configfile_prog")
+	    echo "remote programming" 
+	    command="ssh  $SPINALDEV_REMOTE_UNAME@$SPINALDEV_REMOTE_HOST 'sudo ~/raspice40/program.sh ${SPINALDEV_IMPL_PROGFILE#*/}'"
+	    ;;
 	*)
 	    echo "action "  "$action" "not found! Aborted ..."
 	    exit
